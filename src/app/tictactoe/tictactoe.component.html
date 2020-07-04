@@ -1,0 +1,19 @@
+<table border="1">
+  <tr *ngFor="let i of matrixArr">
+    <td *ngFor="let j of matrixArr" style="width:20px;height:20px;">
+      <input type="button" [value]="square[i][j] !='-' ? square[i][j] : ''" style="width:20px;height:20px;"  (click)="mark(i,j)">
+    </td>
+  </tr>
+</table>
+
+<br><br><br>
+<table border="1">
+  <tr>
+    <th>AI</th>
+    <th>Player</th>
+  </tr>
+  <tr>
+    <td>{{score.AI}}</td>
+    <td>{{score.player}}</td>
+  </tr>
+</table>

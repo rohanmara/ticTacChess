@@ -1,0 +1,16 @@
+.block{
+    height: 50px;
+    width: 50px;
+}
+
+#mydiv {
+    z-index: 9;
+    position: absolute;
+    text-align: center;
+  }
+  
+.mydivheader {
+    padding: 10px;
+    cursor: move;
+    z-index: 10;
+}

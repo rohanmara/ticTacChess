@@ -1,0 +1,9 @@
+<table border="1px">
+    <tr *ngFor="let i of boardArr;let ind1= index;">
+      <td class="block" [ngStyle]="{'background-color': getColor(ind1,ind2)}" *ngFor="let j of i;let ind2= index;">
+        <div class=" mydiv">
+          <label class="mydivheader" [ngStyle]="{'color': j.side ? j.side : 'black' }" for="">{{j.piece}}</label>
+        </div>
+      </td>
+    </tr>
+  </table>
