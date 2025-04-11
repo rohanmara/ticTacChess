@@ -1,9 +1,18 @@
-<table border="1px">
+<table border="1px" *ngIf="filled">
     <tr *ngFor="let i of boardArr;let ind1= index;">
-      <td class="block" [ngStyle]="{'background-color': getColor(ind1,ind2)}" *ngFor="let j of i;let ind2= index;">
-        <div class=" mydiv">
-          <label class="mydivheader" [ngStyle]="{'color': j.side ? j.side : 'black' }" for="">{{j.piece}}</label>
+      <td class="block" [ngStyle]="{'background-color': j.selected ? 'yellow' : getColor(ind1,ind2)}" *ngFor="let j of i;let ind2= index;">
+        <div (click)="selectPiece(ind1, ind2)" class="mydiv" *ngIf="j.piece !== ''">
+            <i style="font-size: 40px;margin-left: calc(50% - 20px)" [ngClass]="{'fa-solid' : j.side === 'black', 'fa-regular': j.side === 'white'}" [class]="'fa-chess-' + j.piece"></i>
+        </div>
+        <div (click)="makeAMove(ind1, ind2)" *ngIf="isShowPossible(ind1,ind2)">
+          <i [ngStyle]="{'color': j.piece=== '' ? 'violet' : 'red'}" class="fa-regular fa-circle"></i>
         </div>
       </td>
     </tr>
   </table>
+
+  <div *ngIf="possible.length">
+    <ul>
+      <li *ngFor="let ind of possible">{{'x : ' + ind[0] + '  ' + ', y: ' + ind[1] }}</li>
+    </ul>
+  </div>

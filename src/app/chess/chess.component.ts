@@ -8,9 +8,11 @@ import { Component, OnInit } from '@angular/core';
 export class ChessComponent implements OnInit {
 
   constructor() { }
-  boardArr = []
+  boardArr = [[],[],[],[],[],[],[],[]]
   title = 'myChess';
-  selected = {};
+  turn = 'white'
+  selected;
+  filled = false;
   possible = []
 
   ngOnInit(){
@@ -18,27 +20,27 @@ export class ChessComponent implements OnInit {
   }
 
   fillBoard(){
-    let letters = ['a','b','c','d','e','f','g','h']
-    let lcount = 0,ncount = 0,arr=[];
-    for(let i =8 ;i > 0;i--){
-      arr=[]
-      for(let j=0;j<8;j++){
-        arr.push({piece: i==7 || i ==2 ? 'Pawn' : this.getPiece(i,j),tag: letters[j]+i , side: this.getSide(i)})
+
+    let lcount = 0,ncount = 0,arr=new Array(8);
+    for(let i =0 ;i <= 7;i++){
+      for(let j = 0; j <= 7; j++){
+        this.boardArr[i][j] = { piece: i==6 || i ==1 ? 'pawn' : this.getPiece(i,j),side: this.getSide(i)};
       }
-      this.boardArr.push(arr)
     }
+    this.filled = true;
+    console.log(this.boardArr)
   }
 
   getPiece(i,j){
-    if(i!=8 && i!=1){
+    if(i!=7 && i!=0){
       return ''
     }else{
       switch(j){
-        case 0: case 7: return 'Rook';
-        case 1: case 6: return 'Knight';
-        case 2: case 5: return 'Bishop';
-        case 3: return 'Queen'
-        case 4: return 'King'
+        case 0: case 7: return 'rook';
+        case 1: case 6: return 'knight';
+        case 2: case 5: return 'bishop';
+        case 3: return 'queen'
+        case 4: return 'king'
       }
     }
   }
@@ -60,23 +62,131 @@ export class ChessComponent implements OnInit {
   }
 
   getSide(i){
-    if(i==1 || i == 2){
-      return 'White'
+    if(i==0 || i == 1){
+      return 'black'
     }else {
-      return 'Black'
+      return 'white'
     }
   }
 
-  selectPiece(obj){
-    this['getTilesFor'+obj.piece](obj);
-    this.selected = obj;
+  makeAMove(row, col){
+    if(this.possible.some((indArr) => { return row === indArr[0] && col === indArr[1];})){
+      this.boardArr[row][col] = {...JSON.parse(JSON.stringify(this.boardArr[this.selected[0]][this.selected[1]])), selected: false};
+      this.boardArr[this.selected[0]][this.selected[1]] = {piece : '', side: ''};
+      this.boardArr[this.selected[0]][this.selected[1]].selected = false;
+      this.possible = [];
+      this.selected = null;
+      this.turn = this.turn === 'white' ? 'black' : 'white';
+    }
   }
 
-  getTilesForPawn(peice){
+  selectPiece(row, col){
+    let obj = this.boardArr[row][col]
+    if(this.turn === obj.side){
+      if(this.selected && this.selected.length) {
+        this.boardArr[this.selected[0]][this.selected[1]].selected = false;
+      }
+      obj.selected = !obj.selected;
+      this.selected = !obj.selected ? [] : [row, col];
+      if(obj.selected){
+        this['getTilesFor'+obj.piece](obj, row, col);
+      }
+    }
+  }
+
+  getTilesForpawn(peice, row, col){
     let letters = ['a','b','c','d','e','f','g','h']
-    if(peice.side == 'black'){
-      this.boardArr[parseInt(peice.tag[1])][ letters.indexOf(peice.tag[0]) ]
+    
+    this.possible = [];
+    console.log(peice, row, col);
+    let oppSide = peice.side === 'white' ? 'black' : 'white';
+    if(peice.side == 'white'){
+      if(this.boardArr[row - 1][col].piece === '') this.possible.push([row - 1, col])
+      if(row === 6 && this.boardArr[row - 2][col].piece === '') this.possible.push([row - 2, col])
+      if(col < 7 && col > 0){
+        if(this.boardArr[row - 1][col - 1].piece !== '' && this.boardArr[row - 1][col - 1].side === oppSide)  this.possible.push([row - 1, col - 1]);
+        if(this.boardArr[row - 1][col + 1].piece !== '' && this.boardArr[row - 1][col + 1].side === oppSide)  this.possible.push([row - 1, col + 1]);
+      }else if(col === 0){
+        if(this.boardArr[row - 1][col + 1].piece !== '' && this.boardArr[row - 1][col + 1].side === oppSide)  this.possible.push([row - 1, col + 1]);
+      }else{
+        if(this.boardArr[row - 1][col - 1].piece !== '' && this.boardArr[row - 1][col - 1].side === oppSide)  this.possible.push([row - 1, col - 1]);
+      }
+    }else {
+      if(this.boardArr[row + 1][col].piece === '') this.possible.push([row + 1, col])
+      if(row === 1 && this.boardArr[row + 2][col].piece === '') this.possible.push([row + 2, col])
+      if(col < 7 && col > 0){
+        if(this.boardArr[row + 1][col + 1].piece !== '')  this.possible.push([row + 1, col + 1]);
+        if(this.boardArr[row + 1][col - 1].piece !== '')  this.possible.push([row + 1, col - 1]);
+      }else if(col === 0){
+        if(this.boardArr[row + 1][col + 1].piece !== '')  this.possible.push([row + 1, col + 1]);
+      }else{
+        if(this.boardArr[row + 1][col - 1].piece !== '')  this.possible.push([row + 1, col - 1]);
+      }
     }
+    console.log(this.possible)
+  }
+
+  getTilesForrook(peice, row, col){
+    this.possible = [];
+    for(let pos = row + 1; pos <= 7; pos++){
+      if(this.boardArr[pos][col].piece !== ''){
+        if(this.boardArr[pos][col].side !== this.turn) this.possible.push([pos, col]);
+        break;
+      }else{
+        this.possible.push([pos, col]);
+      }
+    }
+    for(let pos = row - 1; pos >= 0; pos--){
+      if(this.boardArr[pos][col].piece !== ''){
+        if(this.boardArr[pos][col].side !== this.turn) this.possible.push([pos, col]);
+        break;
+      }else{
+        this.possible.push([pos, col]);
+      }
+    }
+    for(let pos = col + 1; pos <= 7; pos++){
+      if(this.boardArr[row][pos].piece !== ''){
+        if(this.boardArr[row][pos].side !== this.turn) this.possible.push([pos, col]);
+        break;
+      }else{
+        this.possible.push([row, pos]);
+      }
+    }
+    for(let pos = col - 1; pos >= 0; pos--){
+      if(this.boardArr[row][pos].piece !== ''){
+        if(this.boardArr[row][pos].side !== this.turn) this.possible.push([pos, col]);
+        break;
+      }else{
+        this.possible.push([row, pos]);
+      }
+    }
+    console.log(this.possible)
+  }
+
+  getTilesForknight(peice, row, col){
+
+  }
+
+  getTilesForbishop(peice, row, col){
+
+  }
+
+  getTilesForqueen(peice, row, col){
+
+  }
+
+  getTilesForking(peice, row, col){
+
+  }
+
+  isShowPossible(ind1,ind2){
+    if(!this.possible.length) return false;
+    if(this.possible.some((x) => {
+      return ind1 === x[0] && ind2 === x[1];
+    })){
+      return true
+    }
+    return false;
   }
 
 }
